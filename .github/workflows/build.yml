@@ -15,21 +15,22 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.10'
 
-    - name: Install dependencies
+    - name: Prepare buildozer.spec
       run: |
-        pip install --upgrade pip
-        pip install buildozer cython virtualenv
-        sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-
-    - name: Build with Buildozer
-      run: |
+        pip install buildozer
         yes | buildozer init
         sed -i 's/title = My Application/title = SHARVA/' buildozer.spec
         sed -i 's/package.name = myapp/package.name = sharva/' buildozer.spec
-        yes | buildozer -v android debug
+        sed -i 's/android.api = 31/android.api = 33/' buildozer.spec
+        sed -i 's/android.minapi = 21/android.minapi = 24/' buildozer.spec
+
+    - name: Build with Buildozer Action
+      uses: ArtemSBulgakov/buildozer-action@v1
+      with:
+        workdir: .
+        buildozer_version: stable
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
