@@ -33,14 +33,7 @@ jobs:
         pip install --upgrade pip setuptools wheel
         pip install "cython<3.0.0" buildozer
 
-    - name: Accept Android Licenses
-      run: |
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
     - name: Configure and Build APK
-      env:
-        ANDROIDSDK: ${{ env.ANDROID_HOME }}
-        ANDROIDNDK: ${{ env.ANDROID_HOME }}/ndk/25.2.9519653
       run: |
         rm -rf ~/.buildozer
         rm -f buildozer.spec
@@ -56,6 +49,22 @@ jobs:
         sed -i 's/#android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
         sed -i 's/android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
 
+        # Download SDK tools directly to avoid interactive license prompt failure
+        mkdir -p ~/.buildozer/android/platform
+        cd ~/.buildozer/android/platform
+        curl -o sdk-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+        unzip -q sdk-tools.zip -d android-sdk
+        mkdir -p android-sdk/cmdline-tools/latest
+        mv android-sdk/cmdline-tools/bin android-sdk/cmdline-tools/latest/ 2>/dev/null || true
+        mv android-sdk/cmdline-tools/lib android-sdk/cmdline-tools/latest/ 2>/dev/null || true
+
+        # Accept all licenses
+        yes | android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk --licenses || true
+        
+        # Pre-install required build-tools and platform
+        yes | android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk "platform-tools" "platforms;android-33" "build-tools;33.0.2" || true
+
+        cd $GITHUB_WORKSPACE
         buildozer -v android debug
 
     - name: Upload APK
