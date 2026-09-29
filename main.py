@@ -1,5 +1,4 @@
 import os
-import urllib.request
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
@@ -7,14 +6,12 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 import re
 
-# Download Google Official Telugu Font automatically
-FONT_NAME = "telugu_font.ttf"
-if not os.path.exists(FONT_NAME):
-    try:
-        url = "https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSansTelugu/NotoSansTelugu-Regular.ttf"
-        urllib.request.urlretrieve(url, FONT_NAME)
-    except:
-        FONT_NAME = None
+# Use locally packaged font
+FONT_NAME = None
+for candidate in ["NotoSansTelugu-Regular.ttf", "telugu_font.ttf", "suranna.ttf"]:
+    if os.path.exists(candidate):
+        FONT_NAME = candidate
+        break
 
 class SharvaApp(App):
     def build(self):
