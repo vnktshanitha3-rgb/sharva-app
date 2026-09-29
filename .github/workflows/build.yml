@@ -33,14 +33,18 @@ jobs:
         pip install --upgrade pip setuptools wheel
         pip install "cython<3.0.0" buildozer
 
-    - name: Link GitHub Android SDK to Buildozer
+    - name: Prepare Android SDK for Buildozer
       run: |
-        # Accept all official Android licenses first
+        # Accept licenses on runner SDK
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-        # Link Android SDK directly so Buildozer never tries to download broken tools
+        # Buildozer looks specifically for tools/bin/sdkmanager
+        mkdir -p $ANDROID_HOME/tools/bin
+        ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
+
+        # Link runner SDK directly to buildozer directory
         mkdir -p ~/.buildozer/android/platform
-        ln -s $ANDROID_HOME ~/.buildozer/android/platform/android-sdk
+        ln -sfn $ANDROID_HOME ~/.buildozer/android/platform/android-sdk
 
     - name: Configure and Build APK
       run: |
