@@ -20,10 +20,10 @@ class SharvaApp(App):
     def build(self):
         self.layout = BoxLayout(orientation='vertical', padding=30, spacing=15)
         
-        # Title
+        # Title (శర్వ రక్షణ కవచం)
         self.layout.add_widget(Label(
-            text="SHARVA SECURITY\n(శర్వ సెక్యూరిటీ)", 
-            font_size='20sp', 
+            text="SHARVA SECURITY\nరక్షణ కవచం", 
+            font_size='22sp', 
             bold=True, 
             size_hint_y=0.18,
             font_name=FONT,
@@ -42,7 +42,7 @@ class SharvaApp(App):
         
         # Scan Button
         self.scan_btn = Button(
-            text="స్కాన్ చేయి / SCAN MESSAGE", 
+            text="తనిఖీ చేయండి / SCAN MESSAGE", 
             size_hint_y=0.15, 
             background_color=(0.14, 0.38, 0.92, 1),
             bold=True,
@@ -54,7 +54,7 @@ class SharvaApp(App):
         
         # Result Output
         self.result_label = Label(
-            text="మెసేజ్ తనిఖీకి సిద్ధంగా ఉంది\nReady to scan", 
+            text="సందేశం తనిఖీకి సిద్ధంగా ఉంది\nReady to scan", 
             font_size='16sp', 
             size_hint_y=0.25,
             bold=True,
@@ -69,33 +69,33 @@ class SharvaApp(App):
         
         if not text:
             self.result_label.color = (1, 1, 1, 1)
-            self.result_label.text = "దయచేసి మెసేజ్ పేస్ట్ చేయండి!\nPlease enter SMS first!"
+            self.result_label.text = "దయచేసి మెసేజ్ రాయండి!\nPlease enter SMS first!"
             return
 
         score = 0
 
-        # Check for 4 to 6 digit OTP pattern or Telugu OTP mentions
+        # Check for OTP pattern
         if re.search(r'\b\d{4,6}\b', text) or "otp" in text or "ఓటీపీ" in text:
             score += 35
 
-        # Check for risk keywords (English & Telugu)
+        # Check for risk keywords
         if any(w in text for w in RISK_WORDS):
             score += 40
 
-        # Check for external links
+        # Check for links
         if any(d in text for d in SUSPICIOUS_DOMAINS):
             score += 35
         
-        # Result Evaluation
+        # Result Evaluation (No broken emojis)
         if score >= 60:
-            self.result_label.color = (1, 0.1, 0.1, 1)  # Red Alert
-            self.result_label.text = f"🚨 మోసం! OTP ఎవరికీ చెప్పకండి!\nDANGER FRAUD! DO NOT SHARE OTP!\n(Risk Score: {score}/100)"
+            self.result_label.color = (1, 0.1, 0.1, 1)
+            self.result_label.text = f"[ ప్రమాదం - మోసం! ]\nOTP ఎవరికీ చెప్పకండి!\nDANGER FRAUD! DO NOT SHARE OTP!\n(Risk Score: {score}/100)"
         elif score > 0:
-            self.result_label.color = (1, 0.7, 0, 1)  # Orange Alert
-            self.result_label.text = f"⚠️ జాగ్రత్త! అనుమానాస్పద మెసేజ్\nWARNING: Check details carefully.\n(Risk Score: {score}/100)"
+            self.result_label.color = (1, 0.7, 0, 1)
+            self.result_label.text = f"[ హెచ్చరిక ]\nఅనుమానాస్పద సందేశం, జాగ్రత్త!\nWARNING: Suspicious message.\n(Risk Score: {score}/100)"
         else:
-            self.result_label.color = (0.1, 1, 0.1, 1)  # Green Safe
-            self.result_label.text = "✅ సురక్షితమైనది / SAFE MESSAGE"
+            self.result_label.color = (0.1, 1, 0.1, 1)
+            self.result_label.text = "[ సురక్షితం ]\nఈ సందేశం క్షేమకరం / SAFE MESSAGE"
 
 if __name__ == '__main__':
     SharvaApp().run()
