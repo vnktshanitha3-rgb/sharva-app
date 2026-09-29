@@ -26,23 +26,22 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev libltdl-dev ccache
+        sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev libltdl-dev ccache wget
 
     - name: Install Python dependencies
       run: |
         pip install --upgrade pip setuptools wheel
         pip install "cython<3.0.0" buildozer
 
+    - name: Download Telugu Font
+      run: |
+        wget -O NotoSansTelugu.ttf "https://github.com/google/fonts/raw/main/ofl/notosanstelugu/NotoSansTelugu%5Bwdth%2Cwght%5D.ttf"
+
     - name: Prepare Android SDK for Buildozer
       run: |
-        # Accept licenses on runner SDK
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
-        # Buildozer looks specifically for tools/bin/sdkmanager
         mkdir -p $ANDROID_HOME/tools/bin
         ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
-
-        # Link runner SDK directly to buildozer directory
         mkdir -p ~/.buildozer/android/platform
         ln -sfn $ANDROID_HOME ~/.buildozer/android/platform/android-sdk
 
@@ -52,6 +51,7 @@ jobs:
         buildozer init
         sed -i 's/title = My Application/title = SHARVA/' buildozer.spec
         sed -i 's/package.name = myapp/package.name = sharva/' buildozer.spec
+        sed -i 's/source.include_exts = py,png,jpg,kv,atlas/source.include_exts = py,png,jpg,kv,atlas,ttf/' buildozer.spec
         sed -i 's/requirements = python3,kivy/requirements = python3,kivy/' buildozer.spec
         sed -i 's/#android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
         sed -i 's/android.archs = arm64-v8a, armeabi-v7a/android.archs = arm64-v8a/' buildozer.spec
