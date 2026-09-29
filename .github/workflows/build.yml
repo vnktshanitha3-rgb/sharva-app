@@ -18,7 +18,7 @@ jobs:
         python-version: '3.10'
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '17'
@@ -35,6 +35,7 @@ jobs:
 
     - name: Configure and Build APK
       run: |
+        rm -f buildozer.spec
         buildozer init
         sed -i 's/title = My Application/title = SHARVA/' buildozer.spec
         sed -i 's/package.name = myapp/package.name = sharva/' buildozer.spec
@@ -50,4 +51,3 @@ jobs:
       with:
         name: SHARVA-APK
         path: bin/*.apk
-        
