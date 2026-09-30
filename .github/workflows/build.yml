@@ -34,24 +34,28 @@ jobs:
         pip install --upgrade pip
         pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
 
-    - name: Setup Android SDK and Link sdkmanager
+    - name: Configure SDK, NDK and Accept Licenses
       run: |
-        export ANDROID_SDK_DIR="/usr/local/lib/android/sdk"
+        export ANDROID_SDK_ROOT="/usr/local/lib/android/sdk"
         mkdir -p ~/.buildozer/android/platform
         
-        # Link SDK root
-        ln -sfn $ANDROID_SDK_DIR ~/.buildozer/android/platform/android-sdk
+        # Link SDK
+        ln -sfn $ANDROID_SDK_ROOT ~/.buildozer/android/platform/android-sdk
         
-        # Link tools/bin so buildozer finds sdkmanager directly
+        # Link tools/bin for sdkmanager
         mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-        ln -sf $ANDROID_SDK_DIR/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
+        ln -sf $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
         
-        # Pre-link NDK r25b and fake r28c to prevent zip downloading
-        ln -sfn $ANDROID_SDK_DIR/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r25b
-        ln -sfn $ANDROID_SDK_DIR/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r28c
+        # Link runner's pre-installed NDK 25b to prevent downloading r28c zip
+        ln -sfn $ANDROID_SDK_ROOT/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r25b
+        ln -sfn $ANDROID_SDK_ROOT/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r28c
+
+        # Prevent zip download attempts by placing mock zip files
+        touch ~/.buildozer/android/platform/android-ndk-r28c-linux.zip
+        touch ~/.buildozer/android/platform/android-ndk-r25b-linux.zip
 
         # Accept all SDK licenses
-        yes | $ANDROID_SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
     - name: Build APK with Buildozer
       run: |
