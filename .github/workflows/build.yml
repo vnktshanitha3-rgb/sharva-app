@@ -27,18 +27,16 @@ jobs:
       run: |
         curl -L -o NotoSansTelugu-Regular.ttf https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansTelugu/NotoSansTelugu-Regular.ttf
 
-    - name: Install System Dependencies
+    - name: Install System Dependencies & Exact Cython
       run: |
         sudo apt update
         sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev libltdl-dev
         pip install --upgrade pip
-        pip install "buildozer>=1.5.0" cython
+        pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
 
-    - name: Configure SDK and Force Stable NDK Replacement
+    - name: Configure SDK and Force Stable NDK
       run: |
         export ANDROID_SDK_DIR="/usr/local/lib/android/sdk"
-        mkdir -p ~/.buildozer/android/platform
-        ln -sfn $ANDROID_SDK_DIR ~/.buildozer/android/platform/android-sdk
         mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
         ln -sf $ANDROID_SDK_DIR/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
         yes | $ANDROID_SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
@@ -51,7 +49,7 @@ jobs:
 
     - name: Build APK with Buildozer
       run: |
-        buildozer android debug
+        buildozer android debug | grep -v '\[DEBUG\]'
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
