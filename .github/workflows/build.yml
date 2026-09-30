@@ -34,21 +34,14 @@ jobs:
         pip install --upgrade pip
         pip install "buildozer>=1.5.0" cython
 
-    - name: Setup Pure Android SDK Tools and Licenses
+    - name: Configure Exact Android SDK and Accept Licenses
       run: |
-        mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
-        curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip -q commandlinetools.zip -d ~/.buildozer/android/platform/android-sdk/cmdline-tools
-        mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
-        rm commandlinetools.zip
-        
-        # Link legacy tools/bin for buildozer compatibility
-        mkdir -p ~/.buildozer/android/platform/android-sdk/tools
-        ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin ~/.buildozer/android/platform/android-sdk/tools/bin
-
-        # Auto accept licenses
-        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platforms;android-34"
+        export ANDROID_SDK_DIR="/usr/local/lib/android/sdk"
+        mkdir -p ~/.buildozer/android/platform
+        ln -sfn $ANDROID_SDK_DIR ~/.buildozer/android/platform/android-sdk
+        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+        ln -sf $ANDROID_SDK_DIR/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
+        yes | $ANDROID_SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
     - name: Build APK with Buildozer
       run: |
