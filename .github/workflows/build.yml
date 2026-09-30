@@ -47,10 +47,9 @@ jobs:
         rm ndk.zip
         ln -sfn ~/.buildozer/android/platform/android-ndk-r25b ~/.buildozer/android/platform/android-ndk-r28c
 
-    - name: Clean and Build APK
+    - name: Build APK with Buildozer
       run: |
-        buildozer android clean
-        buildozer -v android debug | grep -v '\[DEBUG\]'
+        buildozer android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
