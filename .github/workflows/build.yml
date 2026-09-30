@@ -27,29 +27,29 @@ jobs:
       run: |
         curl -L -o NotoSansTelugu-Regular.ttf https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansTelugu/NotoSansTelugu-Regular.ttf
 
-    - name: Install System Dependencies & Exact Cython
+    - name: Install System Dependencies & Cython
       run: |
         sudo apt update
         sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev libltdl-dev
         pip install --upgrade pip
         pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
 
-    - name: Configure SDK and Force Stable NDK
+    - name: Link Pre-installed SDK and Stable NDK r25b
       run: |
         export ANDROID_SDK_DIR="/usr/local/lib/android/sdk"
-        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-        ln -sf $ANDROID_SDK_DIR/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
-        yes | $ANDROID_SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        mkdir -p ~/.buildozer/android/platform
+        ln -sfn $ANDROID_SDK_DIR ~/.buildozer/android/platform/android-sdk
+        
+        # Link GitHub runner's built-in NDK r25b directly into buildozer
+        ln -sfn $ANDROID_SDK_DIR/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r25b
+        ln -sfn $ANDROID_SDK_DIR/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r28c
 
-        # Download Stable NDK r25b and fake it as r28c
-        curl -o ndk.zip https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
-        unzip -q ndk.zip -d ~/.buildozer/android/platform/
-        rm ndk.zip
-        ln -sfn ~/.buildozer/android/platform/android-ndk-r25b ~/.buildozer/android/platform/android-ndk-r28c
+        # Auto accept licenses
+        yes | $ANDROID_SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
     - name: Build APK with Buildozer
       run: |
-        yes | buildozer android debug
+        buildozer -v android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
