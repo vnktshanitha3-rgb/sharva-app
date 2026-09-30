@@ -27,25 +27,30 @@ jobs:
       run: |
         curl -L -o NotoSansTelugu-Regular.ttf https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansTelugu/NotoSansTelugu-Regular.ttf
 
-    - name: Install System Dependencies & Cython
+    - name: Install System Dependencies & Exact Cython
       run: |
         sudo apt update
         sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev libltdl-dev
         pip install --upgrade pip
         pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
 
-    - name: Configure Pre-installed Android SDK and NDK
+    - name: Setup Android SDK and Link sdkmanager
       run: |
         export ANDROID_SDK_DIR="/usr/local/lib/android/sdk"
         mkdir -p ~/.buildozer/android/platform
         
-        # Link SDK
+        # Link SDK root
         ln -sfn $ANDROID_SDK_DIR ~/.buildozer/android/platform/android-sdk
         
-        # Link pre-installed NDK 25.2 directly as android-ndk-r25b
+        # Link tools/bin so buildozer finds sdkmanager directly
+        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+        ln -sf $ANDROID_SDK_DIR/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
+        
+        # Pre-link NDK r25b and fake r28c to prevent zip downloading
         ln -sfn $ANDROID_SDK_DIR/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r25b
+        ln -sfn $ANDROID_SDK_DIR/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r28c
 
-        # Accept licenses
+        # Accept all SDK licenses
         yes | $ANDROID_SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
     - name: Build APK with Buildozer
