@@ -1,25 +1,52 @@
-[app]
-title = SHARVA
-package.name = sharva
-package.domain = org.sharva
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,ttf
-version = 0.1
-requirements = python3,kivy
-orientation = portrait
-fullscreen = 0
+name: Build Android APK
 
-# Android architecture (only 64-bit for modern phones, builds faster)
-android.archs = arm64-v8a
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-[buildozer]
-# Normal log level to prevent log truncation / memory crash
-log_level = 1
-warn_on_root = 1
+jobs:
+  build:
+    runs-on: ubuntu-22.04
 
-[buildozer:android]
-android.api = 34
-android.minapi = 26
-android.ndk_api = 26
-android.accept_sdk_license = True
-android.permissions = INTERNET
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Set up Java JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Download Telugu Font Directly
+      run: |
+        curl -L -o NotoSansTelugu-Regular.ttf https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansTelugu/NotoSansTelugu-Regular.ttf
+
+    - name: Install System Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev libltdl-dev
+        pip install --upgrade pip
+        pip install "buildozer>=1.5.0" cython
+
+    - name: Accept All Android Licenses
+      run: |
+        mkdir -p ~/.android
+        touch ~/.android/repositories.cfg
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platforms;android-34"
+
+    - name: Build APK with Buildozer
+      run: |
+        buildozer android debug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: sharva-app
+        path: bin/*.apk
