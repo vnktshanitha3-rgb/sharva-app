@@ -34,7 +34,7 @@ jobs:
         pip install --upgrade pip
         pip install "buildozer>=1.5.0" cython
 
-    - name: Configure Exact Android SDK and Accept Licenses
+    - name: Configure Exact Android SDK and Stable NDK
       run: |
         export ANDROID_SDK_DIR="/usr/local/lib/android/sdk"
         mkdir -p ~/.buildozer/android/platform
@@ -43,9 +43,14 @@ jobs:
         ln -sf $ANDROID_SDK_DIR/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
         yes | $ANDROID_SDK_DIR/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
+        # Download Stable NDK r25b directly
+        curl -o ndk.zip https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
+        unzip -q ndk.zip -d ~/.buildozer/android/platform/
+        rm ndk.zip
+
     - name: Build APK with Buildozer
       run: |
-        buildozer android debug
+        APP_ANDROID_NDK_HOME=~/.buildozer/android/platform/android-ndk-r25b buildozer android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
