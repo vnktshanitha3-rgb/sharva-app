@@ -27,39 +27,11 @@ jobs:
       run: |
         curl -L -o NotoSansTelugu-Regular.ttf https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansTelugu/NotoSansTelugu-Regular.ttf
 
-    - name: Install System Dependencies & Exact Cython
-      run: |
-        sudo apt update
-        sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev libltdl-dev
-        pip install --upgrade pip
-        pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv
-
-    - name: Configure SDK, NDK and Accept Licenses
-      run: |
-        export ANDROID_SDK_ROOT="/usr/local/lib/android/sdk"
-        mkdir -p ~/.buildozer/android/platform
-        
-        # Link SDK
-        ln -sfn $ANDROID_SDK_ROOT ~/.buildozer/android/platform/android-sdk
-        
-        # Link tools/bin for sdkmanager
-        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-        ln -sf $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/* ~/.buildozer/android/platform/android-sdk/tools/bin/
-        
-        # Link runner's pre-installed NDK 25b to prevent downloading r28c zip
-        ln -sfn $ANDROID_SDK_ROOT/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r25b
-        ln -sfn $ANDROID_SDK_ROOT/ndk/25.2.9519653 ~/.buildozer/android/platform/android-ndk-r28c
-
-        # Prevent zip download attempts by placing mock zip files
-        touch ~/.buildozer/android/platform/android-ndk-r28c-linux.zip
-        touch ~/.buildozer/android/platform/android-ndk-r25b-linux.zip
-
-        # Accept all SDK licenses
-        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
-    - name: Build APK with Buildozer
-      run: |
-        buildozer -v android debug
+    - name: Build with Buildozer Action
+      uses: ArtemSBulgakov/buildozer-action@v1
+      with:
+        workdir: .
+        buildozer_version: stable
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
