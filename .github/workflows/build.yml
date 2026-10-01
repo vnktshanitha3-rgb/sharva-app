@@ -34,9 +34,9 @@ jobs:
           pip install --upgrade pip
           pip install "Cython<3.0" virtualenv buildozer
 
-      - name: Download Telugu Font
+      - name: Download Telugu and English Unified Font
         run: |
-          curl -L -o NotoSansTelugu-Regular.ttf https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansTelugu/NotoSansTelugu-Regular.ttf
+          curl -L -o NotoSansTelugu-Regular.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/mandali/Mandali-Regular.ttf
 
       - name: Build APK with Buildozer
         run: |
@@ -47,4 +47,3 @@ jobs:
         with:
           name: Sharva-Security-APK
           path: bin/*.apk
-
