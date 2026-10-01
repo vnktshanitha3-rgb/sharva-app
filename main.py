@@ -8,13 +8,18 @@ from kivy.uix.label import Label
 from kivy.core.text import LabelBase
 
 # Locate bundled font
-FONT_FILE = "NotoSansTelugu-Regular.ttf"
-if not os.path.exists(FONT_FILE):
-    FONT_FILE = os.path.join(os.path.dirname(__file__), "NotoSansTelugu-Regular.ttf")
+FONT_NAME = "NotoSansTelugu-Regular.ttf"
+if os.path.exists(FONT_NAME):
+    font_path = FONT_NAME
+else:
+    font_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), FONT_NAME)
 
 try:
-    LabelBase.register(name="TeluguFont", fn_regular=FONT_FILE)
-    USE_FONT = "TeluguFont"
+    if os.path.exists(font_path):
+        LabelBase.register(name="TeluguFont", fn_regular=font_path)
+        USE_FONT = "TeluguFont"
+    else:
+        USE_FONT = None
 except Exception:
     USE_FONT = None
 
@@ -39,8 +44,10 @@ class SharvaApp(App):
             bold=True,
             size_hint_y=0.15,
             halign='center',
+            valign='middle',
             **font_setting
         )
+        self.title_label.bind(size=lambda s, w: setattr(s, 'text_size', w))
         layout.add_widget(self.title_label)
         
         self.input_text = TextInput(
@@ -69,8 +76,10 @@ class SharvaApp(App):
             size_hint_y=0.38,
             bold=True,
             halign='center',
+            valign='middle',
             **font_setting
         )
+        self.result_label.bind(size=lambda s, w: setattr(s, 'text_size', w))
         layout.add_widget(self.result_label)
         
         return layout
