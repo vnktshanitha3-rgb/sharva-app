@@ -25,6 +25,7 @@ except Exception:
 
 font_setting = {'font_name': USE_FONT} if USE_FONT else {}
 
+# Phishing detect chese keywords - Anni alage uncham
 RISK_KEYWORDS = [
     "debit", "debited", "blocked", "kyc", "urgent", "lottery", "gift", 
     "electricity", "pan card", "update", "suspended", "otp", "account",
@@ -36,12 +37,12 @@ SUSPICIOUS_LINKS = ["bit.ly", "tinyurl", "ngrok", ".apk", "is.gd", "t.co", "http
 
 class SharvaApp(App):
     def build(self):
-        # Spacing mariyu Padding penchamu, deenivalla components vothukkovu
+        # Spacing mariyu Padding set chesamu, view neat ga untundi
         layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
         
-        # Title Label - line_height 1.4 tho rendu linelu kalavavu
+        # Title Label - line_height tho rendu linelu clear ga untayi
         self.title_label = Label(
-            text="SHARVA SECURITY\nరక్షణ కవచం",
+            text="SHARVA SECURITY\n[ Cyber Defense / రక్షణ ]",
             font_size='22sp',
             bold=True,
             line_height=1.4,
@@ -55,7 +56,7 @@ class SharvaApp(App):
         
         # Input Box
         self.input_text = TextInput(
-            hint_text="SMS ఇక్కడ పేస్ట్ చేయండి / Paste SMS here...",
+            hint_text="Paste SMS here / SMS ఇక్కడ పేస్ట్ చేయండి...",
             size_hint_y=0.35,
             multiline=True,
             font_size='16sp',
@@ -66,7 +67,7 @@ class SharvaApp(App):
         
         # Scan Button
         self.scan_btn = Button(
-            text="తనిఖీ చేయండి / SCAN MESSAGE",
+            text="SCAN NOW / తనిఖీ చేయండి",
             size_hint_y=0.12,
             background_color=(0.14, 0.38, 0.92, 1),
             bold=True,
@@ -76,9 +77,9 @@ class SharvaApp(App):
         self.scan_btn.bind(on_press=self.scan_message)
         layout.add_widget(self.scan_btn)
         
-        # Result Label - aksharalu okadani meeda okati padakunda line_height 1.4
+        # Result Label
         self.result_label = Label(
-            text="సందేశం తనిఖీకి సిద్ధంగా ఉంది\nReady to scan",
+            text="Ready to Scan\nసందేశం తనిఖీకి సిద్ధంగా ఉంది",
             font_size='16sp',
             line_height=1.4,
             size_hint_y=0.38,
@@ -97,7 +98,7 @@ class SharvaApp(App):
         
         if not text:
             self.result_label.color = (1, 1, 1, 1)
-            self.result_label.text = "దయచేసి SMS రాయండి!\nPlease enter SMS first!"
+            self.result_label.text = "Please enter SMS text!\nదయచేసి SMS రాయండి!"
             return
 
         score = 0
@@ -114,14 +115,14 @@ class SharvaApp(App):
 
         if score >= 60:
             self.result_label.color = (1, 0.1, 0.1, 1)
-            detail = "మోసపూరిత లింక్ ఉంది! క్లిక్ చేయకండి!\nSUSPICIOUS LINK DETECTED!" if has_links else "OTP ఎవరికీ చెప్పకండి!\nDO NOT SHARE OTP!"
-            self.result_label.text = f"[ ప్రమాదం - సైబర్ మోసం! ]\n\n{detail}\n\n(తీవ్రత: {score}/100)"
+            detail = "SUSPICIOUS LINK DETECTED!\nలింక్ ఓపెన్ చేయకండి!" if has_links else "DO NOT SHARE OTP!\nOTP ఎవరికీ చెప్పకండి!"
+            self.result_label.text = f"[ FRAUD DETECTED / ప్రమాదం! ]\n\n{detail}\n\n(తీవ్రత: {score}/100)"
         elif score > 0:
             self.result_label.color = (1, 0.7, 0, 1)
-            self.result_label.text = f"[ హెచ్చరిక ]\n\nఅనుమానాస్పద సందేశం!\nWARNING: Suspicious!\n\n(తీవ్రత: {score}/100)"
+            self.result_label.text = f"[ WARNING / హెచ్చరిక! ]\n\nSuspicious Message Found\nఅనుమానాస్పద సందేశం\n\n(తీవ్రత: {score}/100)"
         else:
             self.result_label.color = (0.1, 1, 0.1, 1)
-            self.result_label.text = "[ సురక్షితం ]\n\nఈ సందేశం క్షేమకరం / SAFE"
+            self.result_label.text = "[ SAFE / సురక్షితం ]\n\nNo threats found\nఈ సందేశం క్షేమకరం"
 
 if __name__ == '__main__':
     SharvaApp().run()
