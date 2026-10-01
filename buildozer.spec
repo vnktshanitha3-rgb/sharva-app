@@ -15,6 +15,9 @@ android.minapi = 21
 android.ndk = 25b
 android.accept_sdk_license = True
 
+# Automatic SMS detection, Emergency Vibration mariyu Notification permissions
+android.permissions = RECEIVE_SMS, READ_SMS, VIBRATE, POST_NOTIFICATIONS
+
 [buildozer]
 log_level = 2
 warn_on_root = 1
