@@ -6,6 +6,30 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.core.text import LabelBase
+from kivy.utils import platform
+
+# Android Specific Services & Vibration Setup
+if platform == 'android':
+    from jnius import autoclass
+    from android.permissions import request_permissions, Permission
+
+    PythonActivity = autoclass('org.kivy.android.PythonActivity')
+    Context = autoclass('android.content.Context')
+    
+    def trigger_emergency_vibration():
+        """Government rain/emergency siren alert laaga continuous vibration trigger chesthundi"""
+        try:
+            activity = PythonActivity.mActivity
+            vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE)
+            if vibrator and vibrator.hasVibrator():
+                # [delay, vibrate, pause, vibrate...] continuous emergency pattern
+                pattern = [0, 600, 200, 600, 200, 1000]
+                vibrator.vibrate(pattern, -1)
+        except Exception as e:
+            print(f"Vibration error: {e}")
+else:
+    def trigger_emergency_vibration():
+        print("[Simulated] BZZZZ! BZZZZ! Emergency Vibration Triggered!")
 
 # Locate bundled font
 FONT_NAME = "NotoSansTelugu-Regular.ttf"
@@ -25,7 +49,7 @@ except Exception:
 
 font_setting = {'font_name': USE_FONT} if USE_FONT else {}
 
-# Phishing detect chese keywords - Anni alage uncham
+# Phishing detection keywords
 RISK_KEYWORDS = [
     "debit", "debited", "blocked", "kyc", "urgent", "lottery", "gift", 
     "electricity", "pan card", "update", "suspended", "otp", "account",
@@ -37,10 +61,10 @@ SUSPICIOUS_LINKS = ["bit.ly", "tinyurl", "ngrok", ".apk", "is.gd", "t.co", "http
 
 class SharvaApp(App):
     def build(self):
-        # Spacing mariyu Padding set chesamu, view neat ga untundi
+        # Spacing mariyu Padding
         layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
         
-        # Title Label - line_height tho rendu linelu clear ga untayi
+        # Title Label
         self.title_label = Label(
             text="SHARVA SECURITY\n[ Cyber Defense / రక్షణ ]",
             font_size='22sp',
@@ -93,6 +117,19 @@ class SharvaApp(App):
         
         return layout
 
+    def on_start(self):
+        # App open avvagane Android permissions auto ga aduguthundi
+        if platform == 'android':
+            try:
+                request_permissions([
+                    Permission.RECEIVE_SMS,
+                    Permission.READ_SMS,
+                    Permission.VIBRATE,
+                    Permission.POST_NOTIFICATIONS
+                ])
+            except Exception as e:
+                print(f"Permission request error: {e}")
+
     def scan_message(self, instance):
         text = self.input_text.text.lower().strip()
         
@@ -114,6 +151,8 @@ class SharvaApp(App):
             score += 35
 
         if score >= 60:
+            # Threat unte ventane Emergency Vibration trigger avthundi!
+            trigger_emergency_vibration()
             self.result_label.color = (1, 0.1, 0.1, 1)
             detail = "SUSPICIOUS LINK DETECTED!\nలింక్ ఓపెన్ చేయకండి!" if has_links else "DO NOT SHARE OTP!\nOTP ఎవరికీ చెప్పకండి!"
             self.result_label.text = f"[ FRAUD DETECTED / ప్రమాదం! ]\n\n{detail}\n\n(తీవ్రత: {score}/100)"
