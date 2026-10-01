@@ -10,9 +10,7 @@ orientation = portrait
 fullscreen = 0
 android.archs = arm64-v8a
 android.allow_backup = True
-
-# Android 13/14 Restricted Settings block bypass kosam API level 30
-android.api = 30
+android.api = 33
 android.minapi = 21
 android.ndk = 25b
 android.accept_sdk_license = True
