@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf
 version = 0.1
 
-# Gemini AI API ని ఇంటర్నెట్ ద్వారా కనెక్ట్ చేయడానికి అవసరమైన ప్యాకేజీలు
+# Gemini AI mariyu Android Native calls kosam avasaramaina packages
 requirements = python3,kivy,pyjnius,openssl,urllib3,certifi
 
 orientation = portrait
@@ -18,8 +18,8 @@ android.minapi = 21
 android.ndk = 25b
 android.accept_sdk_license = True
 
-# SMS, Vibration తో పాటు Gemini AI కోసం తప్పనిసరిగా INTERNET పర్మిషన్ చేర్చాం
-android.permissions = RECEIVE_SMS, READ_SMS, VIBRATE, POST_NOTIFICATIONS, INTERNET, ACCESS_NETWORK_STATE
+# Automatic SMS detection, Full-screen Flash Alert & Siren kosam avasaramaina permissions
+android.permissions = RECEIVE_SMS, READ_SMS, VIBRATE, POST_NOTIFICATIONS, INTERNET, ACCESS_NETWORK_STATE, SYSTEM_ALERT_WINDOW, WAKE_LOCK, FOREGROUND_SERVICE
 
 [buildozer]
 log_level = 2
