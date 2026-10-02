@@ -15,16 +15,23 @@ if platform == 'android':
 
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     Context = autoclass('android.content.Context')
+    Build_VERSION = autoclass('android.os.Build$VERSION')
     
     def trigger_emergency_vibration():
-        """Government rain/emergency siren alert laaga continuous vibration trigger chesthundi"""
+        """Android new versions lo vibrate avvadaniki VibrationEffect tho update chesina code"""
         try:
             activity = PythonActivity.mActivity
             vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE)
             if vibrator and vibrator.hasVibrator():
-                # [delay, vibrate, pause, vibrate...] continuous emergency pattern
-                pattern = [0, 600, 200, 600, 200, 1000]
-                vibrator.vibrate(pattern, -1)
+                sdk_int = Build_VERSION.SDK_INT
+                if sdk_int >= 26:
+                    VibrationEffect = autoclass('android.os.VibrationEffect')
+                    # 1200 milliseconds (1.2 sec) strong continuous emergency vibration
+                    effect = VibrationEffect.createOneShot(1200, VibrationEffect.DEFAULT_AMPLITUDE)
+                    vibrator.vibrate(effect)
+                else:
+                    # Legacy Android versions fallback
+                    vibrator.vibrate(1200)
         except Exception as e:
             print(f"Vibration error: {e}")
 else:
@@ -151,7 +158,7 @@ class SharvaApp(App):
             score += 35
 
         if score >= 60:
-            # Threat unte ventane Emergency Vibration trigger avthundi!
+            # Threat unte ventane updated VibrationEffect trigger avthundi!
             trigger_emergency_vibration()
             self.result_label.color = (1, 0.1, 0.1, 1)
             detail = "SUSPICIOUS LINK DETECTED!\nలింక్ ఓపెన్ చేయకండి!" if has_links else "DO NOT SHARE OTP!\nOTP ఎవరికీ చెప్పకండి!"
