@@ -8,7 +8,7 @@ from kivy.uix.label import Label
 from kivy.core.text import LabelBase
 from kivy.utils import platform
 
-# Android Specific Services & Vibration Setup
+# Android Specific Services & Vibration Setup (Android 14 / HyperOS Support)
 if platform == 'android':
     from jnius import autoclass
     from android.permissions import request_permissions, Permission
@@ -18,22 +18,40 @@ if platform == 'android':
     Build_VERSION = autoclass('android.os.Build$VERSION')
     
     def trigger_emergency_vibration():
-        """Android new versions lo vibrate avvadaniki VibrationEffect tho update chesina code"""
+        """Redmi 14C / Android 14 HyperOS lo force vibration trigger chese code"""
         try:
             activity = PythonActivity.mActivity
-            vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE)
+            sdk_int = Build_VERSION.SDK_INT
+
+            # Android 12+ (API 31, 33, 34) kosam VibratorManager
+            if sdk_int >= 31:
+                vibrator_manager = activity.getSystemService(Context.VIBRATOR_MANAGER_SERVICE)
+                vibrator = vibrator_manager.getDefaultVibrator()
+            else:
+                vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE)
+
             if vibrator and vibrator.hasVibrator():
-                sdk_int = Build_VERSION.SDK_INT
-                if sdk_int >= 26:
-                    VibrationEffect = autoclass('android.os.VibrationEffect')
-                    # 1200 milliseconds (1.2 sec) strong continuous emergency vibration
-                    effect = VibrationEffect.createOneShot(1200, VibrationEffect.DEFAULT_AMPLITUDE)
-                    vibrator.vibrate(effect)
-                else:
-                    # Legacy Android versions fallback
-                    vibrator.vibrate(1200)
+                VibrationEffect = autoclass('android.os.VibrationEffect')
+                AudioAttributesBuilder = autoclass('android.media.AudioAttributes$Builder')
+                AudioAttributes = autoclass('android.media.AudioAttributes')
+
+                # USAGE_ALARM ద్వారా HyperOS లో సైలెంట్ కాకుండా ఫోర్స్ వైబ్రేషన్ వస్తుంది
+                audio_attrs = AudioAttributesBuilder() \
+                    .setUsage(AudioAttributes.USAGE_ALARM) \
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION) \
+                    .build()
+
+                # 1.5 సెకన్లు బలంగా వైబ్రేట్ అవుతుంది
+                effect = VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE)
+                vibrator.vibrate(effect, audio_attrs)
         except Exception as e:
-            print(f"Vibration error: {e}")
+            try:
+                # Fallback standard vibration
+                activity = PythonActivity.mActivity
+                vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE)
+                vibrator.vibrate(1000)
+            except Exception as inner_e:
+                print(f"Vibration error: {inner_e}")
 else:
     def trigger_emergency_vibration():
         print("[Simulated] BZZZZ! BZZZZ! Emergency Vibration Triggered!")
