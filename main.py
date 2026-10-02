@@ -15,7 +15,7 @@ from kivy.clock import mainthread
 
 # --- Gemini API Configuration ---
 GEMINI_API_KEY = "AQ.Ab8RN6KvD2RjO3BSQyFZZtp473Q1fQSQdBZ3BX2P7UIzSDEfhA"
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
 
 # Android Specific Services & Vibration + Native Dialog Setup
 if platform == 'android':
@@ -77,7 +77,7 @@ if platform == 'android':
                 print(f"Vibration error: {inner_e}")
 
     def show_pure_telugu_dialog(title, message):
-        """UI Thread లో ఆండ్రాయిడ్ సిస్టమ్ పాప్-అప్ రన్ చేయడం వల్ల 100% స్వచ్ఛమైన తెలుగు వస్తుంది"""
+        """UI Thread lo Android Native Dialog dwara swachamaina Telugu choopisthundhi"""
         def _show():
             try:
                 activity = PythonActivity.mActivity
@@ -119,14 +119,15 @@ except Exception:
 
 font_setting = {'font_name': USE_FONT} if USE_FONT else {}
 
-# Phishing detection keywords
+# Phishing detection fallback keywords
 RISK_KEYWORDS = [
     "debit", "debited", "blocked", "kyc", "urgent", "lottery", "gift", 
     "electricity", "pan card", "update", "suspended", "otp", "account",
-    "power", "disconnect", "winner", "reward", "khata", "bill"
+    "power", "disconnect", "winner", "reward", "khata", "bill",
+    "telegram", "part-time", "review work", "youtube"
 ]
 
-SUSPICIOUS_LINKS = ["bit.ly", "tinyurl", "ngrok", ".apk", "is.gd", "t.co", "http:", "https:"]
+SUSPICIOUS_LINKS = ["bit.ly", "tinyurl", "ngrok", ".apk", "is.gd", "t.co", "http:", "https:", "@"]
 
 class SharvaApp(App):
     def build(self):
@@ -139,19 +140,17 @@ class SharvaApp(App):
             line_height=1.4,
             size_hint_y=0.15,
             halign='center',
-            valign='middle',
-            **font_setting
+            valign='middle'
         )
         self.title_label.bind(size=lambda s, w: setattr(s, 'text_size', w))
         layout.add_widget(self.title_label)
         
         self.input_text = TextInput(
-            hint_text="Paste SMS here / సందేశం ఇక్కడ పెట్టండి...",
+            hint_text="Paste SMS here...",
             size_hint_y=0.35,
             multiline=True,
             font_size='16sp',
-            line_spacing=4,
-            **font_setting
+            line_spacing=4
         )
         layout.add_widget(self.input_text)
         
@@ -160,21 +159,19 @@ class SharvaApp(App):
             size_hint_y=0.12,
             background_color=(0.14, 0.38, 0.92, 1),
             bold=True,
-            font_size='16sp',
-            **font_setting
+            font_size='16sp'
         )
         self.scan_btn.bind(on_press=self.start_scan)
         layout.add_widget(self.scan_btn)
         
         self.result_label = Label(
-            text="సిస్టమ్ సిద్ధంగా ఉంది\nSystem Ready to Scan",
+            text="System Ready to Scan",
             font_size='16sp',
             line_height=1.4,
             size_hint_y=0.38,
             bold=True,
             halign='center',
-            valign='middle',
-            **font_setting
+            valign='middle'
         )
         self.result_label.bind(size=lambda s, w: setattr(s, 'text_size', w))
         layout.add_widget(self.result_label)
@@ -197,11 +194,11 @@ class SharvaApp(App):
         text = self.input_text.text.strip()
         if not text:
             self.result_label.color = (1, 1, 1, 1)
-            self.result_label.text = "Please enter SMS text!\nదయచేసి SMS రాయండి!"
+            self.result_label.text = "Please enter SMS text!"
             return
 
         self.result_label.color = (1, 0.8, 0.2, 1)
-        self.result_label.text = "Gemini AI ఆలోచిస్తోంది...\nదయచేసి వేచి ఉండండి..."
+        self.result_label.text = "Gemini AI Analyzing...\nPlease wait..."
         self.scan_btn.disabled = True
 
         threading.Thread(target=self.process_detection, args=(text,)).start()
@@ -209,9 +206,9 @@ class SharvaApp(App):
     def process_detection(self, text):
         prompt = (
             f"You are a cybersecurity expert. Analyze this SMS: '{text}'. "
-            "Determine if this is fraud or safe. "
+            "Determine if this is fraud, scam, fake job offer, or safe. "
             "Reply strictly in pure natural Telugu with a clear warning or advice in 2 sentences. "
-            "Start your reply with [FRAUD] if danger/phishing, or [SAFE] if it is normal."
+            "Start your reply with [FRAUD] if danger/phishing/scam, or [SAFE] if it is completely normal."
         )
 
         headers = {'Content-Type': 'application/json'}
@@ -228,7 +225,7 @@ class SharvaApp(App):
                 headers=headers,
                 method='POST'
             )
-            with request.urlopen(req, timeout=10) as response:
+            with request.urlopen(req, timeout=12) as response:
                 res = json.loads(response.read().decode('utf-8'))
                 ai_text = res['candidates'][0]['content']['parts'][0]['text']
                 self.handle_result(text, ai_text)
@@ -248,11 +245,11 @@ class SharvaApp(App):
         if is_fraud:
             trigger_emergency_vibration()
             self.result_label.color = (1, 0.1, 0.1, 1)
-            self.result_label.text = "[ FRAUD DETECTED / డేంజర్! ]\n\nపాప్-అప్ లో హెచ్చరిక చూడండి"
+            self.result_label.text = "[ FRAUD DETECTED / DANGER! ]\n\nCheck Alert Popup on Screen!"
             show_pure_telugu_dialog("హెచ్చరిక! సైబర్ మోసం", clean_telugu)
         else:
             self.result_label.color = (0.1, 1, 0.1, 1)
-            self.result_label.text = "[ SAFE / క్షేమం ]\n\nఈ సందేశం సురక్షితం"
+            self.result_label.text = "[ SAFE / VERIFIED ]\n\nNo threat detected"
             show_pure_telugu_dialog("సురక్షిత సందేశం", clean_telugu)
 
     @mainthread
@@ -268,17 +265,17 @@ class SharvaApp(App):
         if has_risk_words: score += 40
         if has_links: score += 35
 
-        if score >= 60:
+        if score >= 40:
             trigger_emergency_vibration()
             self.result_label.color = (1, 0.1, 0.1, 1)
-            self.result_label.text = f"[ FRAUD DETECTED! ]\n(తీవ్రత: {score}/100)"
+            self.result_label.text = f"[ FRAUD DETECTED! ]\n(Threat Score: {score}/100)"
             show_pure_telugu_dialog(
                 "హెచ్చరిక! సైబర్ మోసం", 
-                "ఇది నకిలీ మోసపూరిత సందేశం. ఇందులో ఉన్న లింక్‌లను క్లిక్ చేయకండి మరియు మీ OTP వివరాలను ఎవరికీ చెప్పవద్దు."
+                "ఇది నకిలీ మోసపూరిత సందేశం. ఇందులో ఉన్న లింక్‌లను క్లిక్ చేయకండి మరియు మీ వివరాలు ఎవరికీ చెప్పవద్దు."
             )
         else:
             self.result_label.color = (0.1, 1, 0.1, 1)
-            self.result_label.text = "[ SAFE / సురక్షితం ]"
+            self.result_label.text = "[ SAFE / NO RISK ]"
             show_pure_telugu_dialog("సురక్షితం", "ఈ సందేశంలో ఎటువంటి అనుమానాస్పద లింకులు లేదా మోసాలు కనిపించలేదు.")
 
 if __name__ == '__main__':
