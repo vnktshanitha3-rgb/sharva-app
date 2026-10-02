@@ -8,7 +8,7 @@ from kivy.uix.label import Label
 from kivy.core.text import LabelBase
 from kivy.utils import platform
 
-# Android Specific Services & Vibration Setup (Android 14 / HyperOS Support)
+# Android Specific Services & Vibration + Sound Alert Setup (Android 14 / HyperOS Support)
 if platform == 'android':
     from jnius import autoclass
     from android.permissions import request_permissions, Permission
@@ -16,9 +16,20 @@ if platform == 'android':
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
     Context = autoclass('android.content.Context')
     Build_VERSION = autoclass('android.os.Build$VERSION')
+    AudioManager = autoclass('android.media.AudioManager')
+    ToneGenerator = autoclass('android.media.ToneGenerator')
     
     def trigger_emergency_vibration():
-        """Redmi 14C / Android 14 HyperOS lo force vibration trigger chese code"""
+        """Redmi 14C / Android 14 HyperOS lo force vibration mariyu Siren Sound trigger chese code"""
+        # 1. Loud Emergency Siren / Alarm Beep Sound
+        try:
+            tone_gen = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+            # Emergency Ringback / Siren Beep tone for 1.2 seconds
+            tone_gen.startTone(ToneGenerator.TONE_CDMA_EMERGENCY_RINGBACK, 1200)
+        except Exception as tone_e:
+            print(f"Sound error: {tone_e}")
+
+        # 2. Hardware Force Vibration
         try:
             activity = PythonActivity.mActivity
             sdk_int = Build_VERSION.SDK_INT
@@ -54,7 +65,7 @@ if platform == 'android':
                 print(f"Vibration error: {inner_e}")
 else:
     def trigger_emergency_vibration():
-        print("[Simulated] BZZZZ! BZZZZ! Emergency Vibration Triggered!")
+        print("[Simulated] BZZZZ! BEEP! BEEP! Emergency Vibration and Sound Triggered!")
 
 # Locate bundled font
 FONT_NAME = "NotoSansTelugu-Regular.ttf"
@@ -176,7 +187,7 @@ class SharvaApp(App):
             score += 35
 
         if score >= 60:
-            # Threat unte ventane updated VibrationEffect trigger avthundi!
+            # Threat unte ventane Emergency Vibration tho paatu Siren Sound kooda vasthundi!
             trigger_emergency_vibration()
             self.result_label.color = (1, 0.1, 0.1, 1)
             detail = "SUSPICIOUS LINK DETECTED!\nలింక్ ఓపెన్ చేయకండి!" if has_links else "DO NOT SHARE OTP!\nOTP ఎవరికీ చెప్పకండి!"
